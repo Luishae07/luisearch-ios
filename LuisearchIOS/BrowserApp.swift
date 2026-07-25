@@ -112,7 +112,7 @@ struct BrowserView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 10)
                 .padding(.top, 6)
-                .onChange(of: tab.urlString) { _, newValue in
+                .onChange(of: tab.urlString) { newValue in
                     if !addressFocused { addressText = newValue }
                 }
 
