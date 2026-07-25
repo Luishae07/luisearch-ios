@@ -123,18 +123,8 @@ struct BrowserView: View {
                 }
 
                 WebViewRepresentable(tab: tab, session: session)
-            }
-            .toolbar {
-                ToolbarItem(placement: .bottomBar) {
-                    Button(action: tab.goBack) { Image(systemName: "chevron.left") }.disabled(!tab.canGoBack)
-                }
-                ToolbarItem(placement: .bottomBar) {
-                    Button(action: tab.goForward) { Image(systemName: "chevron.right") }.disabled(!tab.canGoForward)
-                }
-                ToolbarItem(placement: .bottomBar) {
-                    Button(action: tab.goHome) { Image(systemName: "house") }
-                }
-                accountToolbarItems
+
+                bottomBar
             }
         }
         .sheet(isPresented: $showAccountSheet) { AccountSheet(session: session, isPresented: $showAccountSheet) }
@@ -161,23 +151,35 @@ struct BrowserView: View {
         }
     }
 
-    @ToolbarContentBuilder
-    var accountToolbarItems: some ToolbarContent {
-        if session.username != nil {
-            ToolbarItem(placement: .bottomBar) {
+    // Plain custom bottom bar instead of SwiftUI's .toolbar API -- newer
+    // SDKs gave ToolbarItem/ToolbarItemGroup dual View/ToolbarContent
+    // conformance, which makes `.toolbar { }` genuinely ambiguous to the
+    // type checker once the content has any conditional branching. A bare
+    // HStack sidesteps that entirely.
+    @ViewBuilder
+    var bottomBar: some View {
+        HStack(spacing: 0) {
+            Button(action: tab.goBack) { Image(systemName: "chevron.left") }
+                .disabled(!tab.canGoBack)
+                .frame(maxWidth: .infinity)
+            Button(action: tab.goForward) { Image(systemName: "chevron.right") }
+                .disabled(!tab.canGoForward)
+                .frame(maxWidth: .infinity)
+            Button(action: tab.goHome) { Image(systemName: "house") }
+                .frame(maxWidth: .infinity)
+
+            if session.username != nil {
                 Button(action: bookmarkCurrentPage) {
                     Image(systemName: isCurrentPageBookmarked ? "star.fill" : "star")
                 }
-            }
-            ToolbarItem(placement: .bottomBar) {
+                .frame(maxWidth: .infinity)
                 Button(action: { showBookmarks = true }) { Image(systemName: "list.star") }
-            }
-            ToolbarItem(placement: .bottomBar) {
+                    .frame(maxWidth: .infinity)
                 Button(action: { showHistory = true }) { Image(systemName: "clock.arrow.circlepath") }
+                    .frame(maxWidth: .infinity)
             }
-        }
-        if let username = session.username {
-            ToolbarItem(placement: .bottomBar) {
+
+            if let username = session.username {
                 Menu {
                     Text("Signed in as \(username)")
                     Divider()
@@ -185,14 +187,17 @@ struct BrowserView: View {
                 } label: {
                     Image(systemName: "person.crop.circle.fill")
                 }
-            }
-        } else {
-            ToolbarItem(placement: .bottomBar) {
+                .frame(maxWidth: .infinity)
+            } else {
                 Button(action: { showAccountSheet = true }) {
                     Image(systemName: "person.crop.circle")
                 }
+                .frame(maxWidth: .infinity)
             }
         }
+        .font(.system(size: 18))
+        .padding(.vertical, 10)
+        .background(.bar)
     }
 }
 
