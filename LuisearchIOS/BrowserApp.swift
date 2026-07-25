@@ -125,14 +125,16 @@ struct BrowserView: View {
                 WebViewRepresentable(tab: tab, session: session)
             }
             .toolbar {
-                ToolbarItemGroup(placement: .bottomBar) {
+                ToolbarItem(placement: .bottomBar) {
                     Button(action: tab.goBack) { Image(systemName: "chevron.left") }.disabled(!tab.canGoBack)
-                    Button(action: tab.goForward) { Image(systemName: "chevron.right") }.disabled(!tab.canGoForward)
-                    Spacer()
-                    Button(action: tab.goHome) { Image(systemName: "house") }
-                    Spacer()
-                    accountButtons
                 }
+                ToolbarItem(placement: .bottomBar) {
+                    Button(action: tab.goForward) { Image(systemName: "chevron.right") }.disabled(!tab.canGoForward)
+                }
+                ToolbarItem(placement: .bottomBar) {
+                    Button(action: tab.goHome) { Image(systemName: "house") }
+                }
+                accountToolbarItems
             }
         }
         .sheet(isPresented: $showAccountSheet) { AccountSheet(session: session, isPresented: $showAccountSheet) }
@@ -159,29 +161,36 @@ struct BrowserView: View {
         }
     }
 
-    @ViewBuilder
-    var accountButtons: some View {
+    @ToolbarContentBuilder
+    var accountToolbarItems: some ToolbarContent {
         if session.username != nil {
-            Button(action: bookmarkCurrentPage) {
-                Image(systemName: isCurrentPageBookmarked ? "star.fill" : "star")
+            ToolbarItem(placement: .bottomBar) {
+                Button(action: bookmarkCurrentPage) {
+                    Image(systemName: isCurrentPageBookmarked ? "star.fill" : "star")
+                }
             }
-            Spacer()
-            Button(action: { showBookmarks = true }) { Image(systemName: "list.star") }
-            Spacer()
-            Button(action: { showHistory = true }) { Image(systemName: "clock.arrow.circlepath") }
-            Spacer()
+            ToolbarItem(placement: .bottomBar) {
+                Button(action: { showBookmarks = true }) { Image(systemName: "list.star") }
+            }
+            ToolbarItem(placement: .bottomBar) {
+                Button(action: { showHistory = true }) { Image(systemName: "clock.arrow.circlepath") }
+            }
         }
         if let username = session.username {
-            Menu {
-                Text("Signed in as \(username)")
-                Divider()
-                Button("Log Out", role: .destructive) { session.logOut() }
-            } label: {
-                Image(systemName: "person.crop.circle.fill")
+            ToolbarItem(placement: .bottomBar) {
+                Menu {
+                    Text("Signed in as \(username)")
+                    Divider()
+                    Button("Log Out", role: .destructive) { session.logOut() }
+                } label: {
+                    Image(systemName: "person.crop.circle.fill")
+                }
             }
         } else {
-            Button(action: { showAccountSheet = true }) {
-                Image(systemName: "person.crop.circle")
+            ToolbarItem(placement: .bottomBar) {
+                Button(action: { showAccountSheet = true }) {
+                    Image(systemName: "person.crop.circle")
+                }
             }
         }
     }
