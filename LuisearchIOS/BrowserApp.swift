@@ -81,6 +81,7 @@ struct BrowserView: View {
     @StateObject private var session = AccountSession()
     @State private var addressText = HOME_URL.absoluteString
     @State private var showAccountSheet = false
+    @State private var showAccountDashboard = false
     @State private var showBookmarks = false
     @State private var showHistory = false
     @AppStorage("luisearch_setup_done") private var setupDone = false
@@ -128,6 +129,7 @@ struct BrowserView: View {
             }
         }
         .sheet(isPresented: $showAccountSheet) { AccountSheet(session: session, isPresented: $showAccountSheet) }
+        .sheet(isPresented: $showAccountDashboard) { AccountDashboard(session: session, isPresented: $showAccountDashboard) }
         .sheet(isPresented: $showBookmarks) { BookmarksList(session: session, activeTab: tab) }
         .sheet(isPresented: $showHistory) { HistoryList(session: session, activeTab: tab) }
         .sheet(isPresented: $showSetup) { SetupWizard(session: session, isPresented: $showSetup) }
@@ -183,6 +185,7 @@ struct BrowserView: View {
                 Menu {
                     Text("Signed in as \(username)")
                     Divider()
+                    Button("Account…") { showAccountDashboard = true }
                     Button("Log Out", role: .destructive) { session.logOut() }
                 } label: {
                     Image(systemName: "person.crop.circle.fill")
