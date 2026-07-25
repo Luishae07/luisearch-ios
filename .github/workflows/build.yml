@@ -1,0 +1,40 @@
+name: Build Luisearch iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build unsigned for device
+        run: |
+          xcodebuild -project LuisearchIOS.xcodeproj -scheme LuisearchIOS \
+            -sdk iphoneos -configuration Release \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            -derivedDataPath build \
+            build
+
+      - name: Package as IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/LuisearchIOS.app Payload/
+          zip -r LuisearchIOS.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LuisearchIOS-ipa
+          path: LuisearchIOS.ipa
