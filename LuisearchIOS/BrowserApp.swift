@@ -124,38 +124,7 @@ struct BrowserView: View {
 
                 WebViewRepresentable(tab: tab, session: session)
             }
-            .toolbar {
-                ToolbarItemGroup(placement: .bottomBar) {
-                    Button(action: tab.goBack) { Image(systemName: "chevron.left") }.disabled(!tab.canGoBack)
-                    Button(action: tab.goForward) { Image(systemName: "chevron.right") }.disabled(!tab.canGoForward)
-                    Spacer()
-                    Button(action: tab.goHome) { Image(systemName: "house") }
-                    Spacer()
-                    if session.username != nil {
-                        Button(action: bookmarkCurrentPage) {
-                            Image(systemName: isCurrentPageBookmarked ? "star.fill" : "star")
-                        }
-                        Spacer()
-                        Button(action: { showBookmarks = true }) { Image(systemName: "list.star") }
-                        Spacer()
-                        Button(action: { showHistory = true }) { Image(systemName: "clock.arrow.circlepath") }
-                        Spacer()
-                    }
-                    if let username = session.username {
-                        Menu {
-                            Text("Signed in as \(username)")
-                            Divider()
-                            Button("Log Out", role: .destructive) { session.logOut() }
-                        } label: {
-                            Image(systemName: "person.crop.circle.fill")
-                        }
-                    } else {
-                        Button(action: { showAccountSheet = true }) {
-                            Image(systemName: "person.crop.circle")
-                        }
-                    }
-                }
-            }
+            .toolbar { browserToolbarContent }
         }
         .sheet(isPresented: $showAccountSheet) { AccountSheet(session: session, isPresented: $showAccountSheet) }
         .sheet(isPresented: $showBookmarks) { BookmarksList(session: session, activeTab: tab) }
@@ -178,6 +147,45 @@ struct BrowserView: View {
             session.removeBookmark(existing)
         } else {
             session.addBookmark(url: tab.urlString, title: tab.pageTitle)
+        }
+    }
+
+    @ToolbarContentBuilder
+    var browserToolbarContent: some ToolbarContent {
+        ToolbarItemGroup(placement: .bottomBar) {
+            Button(action: tab.goBack) { Image(systemName: "chevron.left") }.disabled(!tab.canGoBack)
+            Button(action: tab.goForward) { Image(systemName: "chevron.right") }.disabled(!tab.canGoForward)
+            Spacer()
+            Button(action: tab.goHome) { Image(systemName: "house") }
+            Spacer()
+            accountButtons
+        }
+    }
+
+    @ViewBuilder
+    var accountButtons: some View {
+        if session.username != nil {
+            Button(action: bookmarkCurrentPage) {
+                Image(systemName: isCurrentPageBookmarked ? "star.fill" : "star")
+            }
+            Spacer()
+            Button(action: { showBookmarks = true }) { Image(systemName: "list.star") }
+            Spacer()
+            Button(action: { showHistory = true }) { Image(systemName: "clock.arrow.circlepath") }
+            Spacer()
+        }
+        if let username = session.username {
+            Menu {
+                Text("Signed in as \(username)")
+                Divider()
+                Button("Log Out", role: .destructive) { session.logOut() }
+            } label: {
+                Image(systemName: "person.crop.circle.fill")
+            }
+        } else {
+            Button(action: { showAccountSheet = true }) {
+                Image(systemName: "person.crop.circle")
+            }
         }
     }
 }
